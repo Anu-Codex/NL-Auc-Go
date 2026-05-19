@@ -10,8 +10,12 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-mongoose.connect(process.env.MONGO_URI).then(() => console.log("✅ Connected to MongoDB"));
-
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => {
+    console.log("✅ Database Connected: NexusAuction2026 (Fresh Start)");
+    seedTeams();
+})
+.catch(err => console.error("❌ Connection Error:", err));
 // --- SCHEMAS ---
 const playerSchema = new mongoose.Schema({
     name: String, strength: Number, cardType: String, baseValue: Number,
