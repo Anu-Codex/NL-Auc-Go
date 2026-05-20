@@ -57,12 +57,9 @@ const CAPTAINS = [
     { email: "riturajjj10@gmail.com", name: "Storm Hunters", pass: "roni123" },
     { email: "asheshchatterjee.2016@gmail.com", name: "Xenon", pass: "ashesh123" },
     { email: "anishdgp0104@gmail.com", name: "FlameBorn Kings", pass: "anish123" },
-    { email: "anish@mystic.com", name: "Bluster FC", pass: "anish123" },
+    { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
     { email: "debatreya@mystic.com", name: "Let it go na", pass: "debatreya123" },
     { email: "hitanshu@mystic.com", name: "Skystrikers United", pass: "hitanshu123" },
-    { email: "aritra@mystic.com", name: "MI CHAMPSS", pass: "aritra123" },
-    { email: "nil@mystic.com", name: "ELITE MSN", pass: "nil123" },
-    { email: "debojit@mystic.com", name: "Visca", pass: "debojit123" },
     { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
 ];
 
@@ -81,12 +78,9 @@ const teamList = [
     { name: "Storm Hunters", budget: 100 },
     { name: "Xenon", budget: 100 },
     { name: "FlameBorn Kings", budget: 100 },
-    { name: "Bluster FC", budget: 100 },
+    { name: "Wrath Of Wings", budget: 100 },
     { name: "Let it go na", budget: 100 },
     { name: "Skystrikers United", budget: 100 },
-    { name: "MI CHAMPSS", budget: 100 },
-    { name: "ELITE MSN", budget: 100 },
-    { name: "Visca", budget: 100 },
     { name: "PREDETORS TRIO", budget: 100 }
 ];
 
