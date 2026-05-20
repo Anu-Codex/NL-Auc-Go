@@ -77,8 +77,8 @@ async function sendOTPEmail(email, otp) {
 
 // --- AUTOMATIC TEAM SEEDING ---
 const teamList = [
-    { name: "Virat FC", budget: 100 },
-    { name: "Neimesis eSports", budget: 100 },
+    { name: "Storm Hunters", budget: 100 },
+    { name: "Xenon", budget: 100 },
     { name: "Team ICONIC", budget: 100 },
     { name: "Bluster FC", budget: 100 },
     { name: "Let it go na", budget: 100 },
