@@ -63,7 +63,7 @@ const CAPTAINS = [
     { email: "aritra@mystic.com", name: "MI CHAMPSS", pass: "aritra123" },
     { email: "nil@mystic.com", name: "ELITE MSN", pass: "nil123" },
     { email: "debojit@mystic.com", name: "Visca", pass: "debojit123" },
-    { email: "arghya@mystic.com", name: "PREDETORS TRIO", pass: "arghya123" }
+    { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
 ];
 
 // --- AUTH UTILITIES ---
