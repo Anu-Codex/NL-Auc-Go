@@ -80,7 +80,7 @@ async function sendOTPEmail(email, otp) {
 const teamList = [
     { name: "Storm Hunters", budget: 100 },
     { name: "Xenon", budget: 100 },
-    { name: "Team ICONIC", budget: 100 },
+    { name: "FlameBorn Kings", budget: 100 },
     { name: "Bluster FC", budget: 100 },
     { name: "Let it go na", budget: 100 },
     { name: "Skystrikers United", budget: 100 },
@@ -118,7 +118,13 @@ app.get('/fix-budgets', async (req, res) => {
 });
 
 // --- AUCTION LOGIC & TIMER ---
-let auctionState = { activePlayerId: null, currentBid: 0, highestBidder: 'No Bids Yet', timeLeft: 60 };
+let auctionState = { 
+    activePlayerId: null, 
+    currentBid: 0, 
+    highestBidder: 'No Bids Yet', 
+    timeLeft: 120,
+    skippedTeams: [] // NEW: Track who clicked skip
+};
 let timerInterval = null;
 
 function startTimer() {
@@ -255,24 +261,50 @@ io.on('connection', async (socket) => {
     });
 
     socket.on('startAuction', async ({ playerId, baseValue }) => {
-        const player = await Player.findById(playerId);
-        if (player) {
-            auctionState = { activePlayerId: player, currentBid: baseValue, highestBidder: 'No Bids Yet', timeLeft: 60 };
-            io.emit('updateAuction', auctionState);
-            startTimer();
-        }
-    });
+    const player = await Player.findById(playerId);
+    if (player) {
+        auctionState = { 
+            activePlayerId: player, 
+            currentBid: baseValue, 
+            highestBidder: 'No Bids Yet', 
+            timeLeft: 120,
+            skippedTeams: [] // Reset for new player
+        };
+        io.emit('updateAuction', auctionState);
+        startTimer();
+    }
+});
 
     socket.on('placeBid', async ({ teamName, increment }) => {
-        const team = await Team.findOne({ name: teamName });
-        const newBid = auctionState.currentBid + increment;
+    // 1. Check if they already skipped
+    if (auctionState.skippedTeams.includes(teamName)) {
+        return socket.emit('errorMsg', "You skipped this round!");
+    }
+    // 2. Check if they are already the highest bidder
+    if (auctionState.highestBidder === teamName) {
+        return socket.emit('errorMsg', "You are already the highest bidder!");
+    }
+
+    const team = await Team.findOne({ name: teamName });
+    const newBid = auctionState.currentBid + increment;
         if (team && team.budget >= newBid) {
-            auctionState.currentBid = newBid;
-            auctionState.highestBidder = teamName;
-            startTimer(); 
-            io.emit('updateAuction', auctionState);
-        }
-    });
+        auctionState.currentBid = newBid;
+        auctionState.highestBidder = teamName;
+        startTimer(); // Reset to 60s
+        io.emit('updateAuction', auctionState);
+    }
+});
+    socket.on('skipRound', ({ teamName }) => {
+    if (!auctionState.skippedTeams.includes(teamName)) {
+        auctionState.skippedTeams.push(teamName);
+        io.emit('updateAuction', auctionState);
+        io.emit('newMessage', { 
+            sender: "SYSTEM", 
+            role: "admin", 
+            text: `⚠️ ${teamName} has skipped this round.` 
+        });
+    }
+});
 
     socket.on('sellPlayer', autoSellPlayer);
     socket.on('cancelAuction', () => {
