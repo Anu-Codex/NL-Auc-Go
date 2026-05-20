@@ -53,8 +53,8 @@ const ADMINS = [
 ];
 
 const CAPTAINS = [
-    { email: "surjanshu@mystic.com", name: "Virat FC", pass: "surjanshu123" },
-    { email: "ahitagni@mystic.com", name: "Neimesis eSports", pass: "ahitagni123" },
+    { email: "riturajjj10@gmail.com", name: "Storm Hunters", pass: "roni123" },
+    { email: "asheshchatterjee.2016@gmail.com", name: "Xenon", pass: "ashesh123" },
     { email: "ritam@mystic.com", name: "Team ICONIC", pass: "ritam123" },
     { email: "anish@mystic.com", name: "Bluster FC", pass: "anish123" },
     { email: "debatreya@mystic.com", name: "Let it go na", pass: "debatreya123" },
