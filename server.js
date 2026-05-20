@@ -1,176 +1,144 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+const { Server } = require('socket.io');
 const cors = require('cors');
+const SibApiV3Sdk = require('sib-api-v3-sdk');
+const bcrypt = require('bcryptjs');
+
 
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-mongoose.connect(process.env.MONGODB_URI)
-.then(() => {
-    console.log("✅ Database Connected: NexusAuction2026 (Fresh Start)");
-    seedTeams();
-})
-.catch(err => console.error("❌ Connection Error:", err));
-// --- SCHEMAS ---
-const playerSchema = new mongoose.Schema({
-    name: String, strength: Number, cardType: String, baseValue: Number,
-    status: { type: String, default: 'Available' }, soldTo: { type: String, default: '-' }
+// --- BREVO CONFIG ---
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY; 
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// --- MONGO SCHEMAS ---
+const userSchema = new mongoose.Schema({
+    name: String, email: String, role: String, otp: String, isVerified: { type: Boolean, default: false }
 });
-const teamSchema = new mongoose.Schema({ name: String, budget: Number });
+const playerSchema = new mongoose.Schema({
+    name: String, strength: Number, cardType: String, status: { type: String, default: 'Available' }, baseValue: Number, soldTo: String
+});
+const teamSchema = new mongoose.Schema({ name: String, budget: { type: Number, default: 1000 } });
+const stateSchema = new mongoose.Schema({ activePlayerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' }, currentBid: Number, highestBidder: String });
 const chatSchema = new mongoose.Schema({ sender: String, role: String, text: String, timestamp: { type: Date, default: Date.now } });
 
+const User = mongoose.model('User', userSchema);
 const Player = mongoose.model('Player', playerSchema);
 const Team = mongoose.model('Team', teamSchema);
+const State = mongoose.model('State', stateSchema);
 const Chat = mongoose.model('Chat', chatSchema);
 
-// --- AUTOMATIC TEAM SEEDING ---
-const teamList = [
-    { name: "Virat FC", budget: 100 },
-    { name: "Neimesis eSports", budget: 100 },
-    { name: "Team ICONIC", budget: 100 },
-    { name: "Bluster FC", budget: 100 },
-    { name: "Let it go na", budget: 100 },
-    { name: "Skystrikers United", budget: 100 },
-    { name: "MI CHAMPSS", budget: 100 },
-    { name: "ELITE MSN", budget: 100 },
-    { name: "Visca", budget: 100 },
-    { name: "PREDETORS TRIO", budget: 100 }
-];
+// --- TIMER & AUCTION LOGIC ---
+let auctionTimer = null;
+let timeLeft = 60;
 
-async function seedTeams() {
-    for (let t of teamList) {
-        const exists = await Team.findOne({ name: t.name });
-        if (!exists) {
-            await new Team(t).save();
-            console.log(`🌱 Seeded team: ${t.name}`);
-        }
-    }
-}
-seedTeams();
-
-// --- HTTP ROUTES ---
-app.get('/reset-teams', async (req, res) => {
-    try {
-        await Team.deleteMany({}); 
-        await Team.insertMany(teamList);
-        res.send("✅ Teams successfully reset to 100L!");
-    } catch (e) { res.status(500).send(e.message); }
-});
-
-app.get('/fix-budgets', async (req, res) => {
-    try {
-        await Team.updateMany({}, { $set: { budget: 100 } });
-        res.send("✅ All budgets reset to 100L!");
-    } catch (e) { res.status(500).send(e.message); }
-});
-
-// --- AUCTION LOGIC & TIMER ---
-let auctionState = { activePlayerId: null, currentBid: 0, highestBidder: 'No Bids Yet', timeLeft: 60 };
-let timerInterval = null;
-
-function startTimer() {
-    clearInterval(timerInterval);
-    auctionState.timeLeft = 60;
-    timerInterval = setInterval(async () => {
-        auctionState.timeLeft--;
-        if (auctionState.timeLeft <= 0) {
-            clearInterval(timerInterval);
+const startTimer = () => {
+    clearInterval(auctionTimer);
+    timeLeft = 60;
+    io.emit('timerUpdate', timeLeft);
+    auctionTimer = setInterval(async () => {
+        timeLeft--;
+        io.emit('timerUpdate', timeLeft);
+        if (timeLeft <= 0) {
+            clearInterval(auctionTimer);
             await autoSellPlayer();
-        } else {
-            io.emit('updateAuction', auctionState);
         }
     }, 1000);
-}
+};
 
-async function autoSellPlayer() {
-    if (auctionState.activePlayerId && auctionState.highestBidder !== 'No Bids Yet') {
-        const price = auctionState.currentBid;
-        const teamName = auctionState.highestBidder;
-
-        await Player.findByIdAndUpdate(auctionState.activePlayerId._id, {
-            status: 'Sold',
-            soldTo: `${teamName} (${price}L)`
-        });
-        await Team.findOneAndUpdate({ name: teamName }, { $inc: { budget: -price } });
-
-        auctionState = { activePlayerId: null, currentBid: 0, highestBidder: 'No Bids Yet', timeLeft: 0 };
-        
+const autoSellPlayer = async () => {
+    let state = await State.findOne().populate('activePlayerId');
+    if (state && state.activePlayerId && state.highestBidder) {
+        await Team.findOneAndUpdate({ name: state.highestBidder }, { $inc: { budget: -state.currentBid } });
+        await Player.findByIdAndUpdate(state.activePlayerId, { status: 'Sold', soldTo: `${state.highestBidder} (${state.currentBid}L)` });
+        state.activePlayerId = null; state.currentBid = 0; state.highestBidder = null;
+        await state.save();
         io.emit('updatePlayers', await Player.find());
         io.emit('updateTeams', await Team.find());
-        io.emit('updateAuction', auctionState);
-        io.emit('newMessage', { sender: "SYSTEM", role: "admin", text: `🔴 SOLD! ${teamName} bought the player for ${price}L.` });
-    } else {
-        auctionState = { activePlayerId: null, currentBid: 0, highestBidder: 'No Bids Yet', timeLeft: 0 };
-        io.emit('updateAuction', auctionState);
+        io.emit('updateAuction', state);
+        io.emit('newMessage', { sender: "SYSTEM", text: "🔨 PLAYER SOLD!" });
     }
-}
+};
+
+// --- AUTH HELPERS ---
+const sendOTP = async (email, otp) => {
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.subject = "Nexus Legends OTP";
+    sendSmtpEmail.htmlContent = `<html><body><h1>Your Code: ${otp}</h1></body></html>`;
+    sendSmtpEmail.sender = { "name": "Nexus Legends", "email": "mysticfcmlegends@gmail.com" };
+    sendSmtpEmail.to = [{ "email": email }];
+    return apiInstance.sendTransacEmail(sendSmtpEmail);
+};
 
 // --- SOCKETS ---
 io.on('connection', async (socket) => {
-    socket.emit('initialData', {
-        players: await Player.find(),
-        teams: await Team.find(),
-        chats: await Chat.find().sort({ timestamp: 1 }).limit(50),
-        state: auctionState
+    const sync = async () => {
+        socket.emit('initialData', {
+            players: await Player.find(),
+            teams: await Team.find(),
+            state: await State.findOne().populate('activePlayerId'),
+            chats: await Chat.find().sort({ timestamp: -1 }).limit(50)
+        });
+    };
+    await sync();
+
+    // Registration & Login
+    socket.on('register', async (data) => {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        await User.findOneAndUpdate({ email: data.email }, { ...data, otp, role: 'visitor' }, { upsert: true });
+        await sendOTP(data.email, otp);
+        socket.emit('authStep', 'otp');
     });
 
-    socket.on('addPlayer', async (data) => {
-        try {
-            const newPlayer = new Player({ ...data, strength: Number(data.strength), baseValue: Number(data.baseValue) });
-            await newPlayer.save();
-            io.emit('updatePlayers', await Player.find()); 
-        } catch (err) { console.error(err); }
+    socket.on('verifyOTP', async ({ email, otp }) => {
+        const user = await User.findOne({ email, otp });
+        if (user) {
+            user.isVerified = true; await user.save();
+            socket.emit('loginSuccess', { name: user.name, role: user.role, email: user.email });
+        } else socket.emit('errorMsg', "Invalid OTP");
     });
 
+    // Auction Controls
     socket.on('startAuction', async ({ playerId, baseValue }) => {
-        const player = await Player.findById(playerId);
-        if (player) {
-            auctionState = { activePlayerId: player, currentBid: baseValue, highestBidder: 'No Bids Yet', timeLeft: 60 };
-            io.emit('updateAuction', auctionState);
-            startTimer();
-        }
+        let state = await State.findOne();
+        state.activePlayerId = playerId; state.currentBid = baseValue; state.highestBidder = null;
+        await state.save();
+        startTimer();
+        io.emit('updateAuction', await State.findOne().populate('activePlayerId'));
     });
 
     socket.on('placeBid', async ({ teamName, increment }) => {
-        const team = await Team.findOne({ name: teamName });
-        const newBid = auctionState.currentBid + increment;
-        if (team && team.budget >= newBid) {
-            auctionState.currentBid = newBid;
-            auctionState.highestBidder = teamName;
-            startTimer(); 
-            io.emit('updateAuction', auctionState);
-        }
+        let state = await State.findOne();
+        state.currentBid += increment; state.highestBidder = teamName;
+        await state.save();
+        startTimer(); // AUTO RESET TO 60s
+        io.emit('updateAuction', await State.findOne().populate('activePlayerId'));
     });
 
     socket.on('sellPlayer', autoSellPlayer);
-    socket.on('cancelAuction', () => {
-        clearInterval(timerInterval);
-        auctionState = { activePlayerId: null, currentBid: 0, highestBidder: 'No Bids Yet', timeLeft: 0 };
-        io.emit('updateAuction', auctionState);
+
+    socket.on('cancelAuction', async () => {
+        clearInterval(auctionTimer);
+        let state = await State.findOne();
+        state.activePlayerId = null; await state.save();
+        io.emit('updateAuction', state);
     });
 
-    socket.on('addBonus', async ({ teamName, amount }) => {
-        try {
-            await Team.findOneAndUpdate({ name: teamName }, { $inc: { budget: Number(amount) } });
-            io.emit('updateTeams', await Team.find());
-            io.emit('newMessage', { sender: "SYSTEM", role: "admin", text: `✨ ${teamName} purse adjusted by ${amount}L!` });
-        } catch (err) { console.error(err); }
-    });
-
-    socket.on('sendMessage', async (data) => {
-        await new Chat(data).save();
-        io.emit('newMessage', data);
-    });
-
-    socket.on('deletePlayer', async (playerId) => {
-        await Player.findByIdAndDelete(playerId);
-        io.emit('updatePlayers', await Player.find()); 
-    });
+    socket.on('addPlayer', async (d) => { await Player.create(d); io.emit('updatePlayers', await Player.find()); });
+    socket.on('deletePlayer', async (id) => { await Player.findByIdAndDelete(id); io.emit('updatePlayers', await Player.find()); });
+    socket.on('sendMessage', async (d) => { const m = await Chat.create(d); io.emit('newMessage', m); });
 });
 
-server.listen(process.env.PORT || 3000, () => console.log("Server Running"));
+// --- RESET ROUTES ---
+app.get('/reset-budget', async (req, res) => { await Team.updateMany({}, { budget: 1000 }); res.send("Budgets Reset"); });
+app.get('/reset-teams', async (req, res) => { await Player.updateMany({}, { status: 'Available', soldTo: '' }); res.send("Tournament Reset"); });
+
+mongoose.connect(process.env.MONGODB_URI).then(() => server.listen(3000));
