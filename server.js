@@ -32,7 +32,8 @@ const userSchema = new mongoose.Schema({
 });
 
 const playerSchema = new mongoose.Schema({
-    name: String, strength: Number, cardType: String, baseValue: Number,
+    name: String, strength: Number, cardType: String, baseValue: Number, division: Number, // NEW
+    phone: Number,
     status: { type: String, default: 'Available' }, soldTo: { type: String, default: '-' }
 });
 
@@ -246,7 +247,8 @@ io.on('connection', async (socket) => {
 
     socket.on('addPlayer', async (data) => {
         try {
-            const newPlayer = new Player({ ...data, strength: Number(data.strength), baseValue: Number(data.baseValue) });
+            const newPlayer = new Player({ ...data, strength: Number(data.strength), baseValue: Number(data.baseValue), division: Number(data.division), // NEW
+            phone: Number(data.phone) });
             await newPlayer.save();
             io.emit('updatePlayers', await Player.find()); 
         } catch (err) { console.error(err); }
