@@ -59,7 +59,7 @@ const CAPTAINS = [
     { email: "anishdgp0104@gmail.com", name: "FlameBorn Kings", pass: "anish123" },
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
     { email: "rohitnaskar845@gmail.com", name: "IMMORTAL DE CAMPEONES (IDC)", pass: "rohit123" },
-    { email: "hitanshu@mystic.com", name: "Skystrikers United", pass: "hitanshu123" },
+    { email: "hitanshu@mystic.com", name: "Destroyers", pass: "saikat123" },
     { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
 ];
 
@@ -80,7 +80,7 @@ const teamList = [
     { name: "FlameBorn Kings", budget: 1000 },
     { name: "Wrath Of Wings", budget: 1000 },
     { name: "IMMORTAL DE CAMPEONES (IDC)", budget: 1000 },
-    { name: "Skystrikers United", budget: 1000 },
+    { name: "Destroyers", budget: 1000 },
     { name: "PREDETORS TRIO", budget: 1000 }
 ];
 
