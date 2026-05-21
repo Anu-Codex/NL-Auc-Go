@@ -58,7 +58,7 @@ const CAPTAINS = [
     { email: "asheshchatterjee.2016@gmail.com", name: "Xenon", pass: "ashesh123" },
     { email: "anishdgp0104@gmail.com", name: "FlameBorn Kings", pass: "anish123" },
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
-    { email: "debatreya@mystic.com", name: "Let it go na", pass: "debatreya123" },
+    { email: "rohitnaskar845@gmail.com", name: "IMMORTAL DE CAMPEONES (IDC)", pass: "rohit123" },
     { email: "hitanshu@mystic.com", name: "Skystrikers United", pass: "hitanshu123" },
     { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
 ];
@@ -75,13 +75,13 @@ async function sendOTPEmail(email, otp) {
 
 // --- AUTOMATIC TEAM SEEDING ---
 const teamList = [
-    { name: "Storm Hunters", budget: 100 },
-    { name: "Xenon", budget: 100 },
-    { name: "FlameBorn Kings", budget: 100 },
-    { name: "Wrath Of Wings", budget: 100 },
-    { name: "Let it go na", budget: 100 },
-    { name: "Skystrikers United", budget: 100 },
-    { name: "PREDETORS TRIO", budget: 100 }
+    { name: "Storm Hunters", budget: 1000 },
+    { name: "Xenon", budget: 1000 },
+    { name: "FlameBorn Kings", budget: 1000 },
+    { name: "Wrath Of Wings", budget: 1000 },
+    { name: "IMMORTAL DE CAMPEONES (IDC)", budget: 1000 },
+    { name: "Skystrikers United", budget: 1000 },
+    { name: "PREDETORS TRIO", budget: 1000 }
 ];
 
 async function seedTeams() {
@@ -106,7 +106,7 @@ app.get('/reset-teams', async (req, res) => {
 
 app.get('/fix-budgets', async (req, res) => {
     try {
-        await Team.updateMany({}, { $set: { budget: 100 } });
+        await Team.updateMany({}, { $set: { budget: 1000 } });
         res.send("✅ All budgets reset to 100L!");
     } catch (e) { res.status(500).send(e.message); }
 });
@@ -123,7 +123,7 @@ let timerInterval = null;
 
 function startTimer() {
     clearInterval(timerInterval);
-    auctionState.timeLeft = 60;
+    auctionState.timeLeft = 120;
     timerInterval = setInterval(async () => {
         auctionState.timeLeft--;
         if (auctionState.timeLeft <= 0) {
