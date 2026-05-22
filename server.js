@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
 const playerSchema = new mongoose.Schema({
     name: String, strength: Number, cardType: String, baseValue: Number, division: Number, // NEW
     phone: Number,
+    imageUrl: String,
     status: { type: String, default: 'Available' }, soldTo: { type: String, default: '-' }
 });
 
@@ -248,7 +249,9 @@ io.on('connection', async (socket) => {
     socket.on('addPlayer', async (data) => {
         try {
             const newPlayer = new Player({ ...data, strength: Number(data.strength), baseValue: Number(data.baseValue), division: Number(data.division), // NEW
-            phone: Number(data.phone) });
+            phone: Number(data.phone),
+            imageUrl: data.imageUrl  
+            });
             await newPlayer.save();
             io.emit('updatePlayers', await Player.find()); 
         } catch (err) { console.error(err); }
@@ -325,6 +328,27 @@ io.on('connection', async (socket) => {
         await Player.findByIdAndDelete(playerId);
         io.emit('updatePlayers', await Player.find()); 
     });
+    // Add this inside your io.on('connection', ...) block
+socket.on('updatePlayerImage', async ({ playerId, imageUrl }) => {
+    try {
+        await Player.findByIdAndUpdate(playerId, { imageUrl: imageUrl });
+        
+        // Refresh the list for everyone
+        const updatedPlayers = await Player.find();
+        io.emit('updatePlayers', updatedPlayers);
+        
+        // If this player is currently live, update the auction screen too
+        if (auctionState.activePlayerId && auctionState.activePlayerId._id.toString() === playerId) {
+            auctionState.activePlayerId.imageUrl = imageUrl;
+            io.emit('updateAuction', auctionState);
+        }
+        
+        socket.emit('newMessage', { sender: "SYSTEM", role: "admin", text: "✅ Player image updated successfully!" });
+    } catch (err) {
+        console.error(err);
+        socket.emit('errorMsg', "Failed to update image");
+    }
+});
 });
 
 server.listen(process.env.PORT || 3000, () => console.log("Server Running"));
