@@ -61,7 +61,7 @@ const CAPTAINS = [
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
     { email: "rohitnaskar845@gmail.com", name: "IMMORTAL DE CAMPEONES (IDC)", pass: "rohit123" },
     { email: "pariasaikat94@gmail.com", name: "Destroyers", pass: "saikat123" },
-    { email: "cjoy7970@gmail.com", name: "ml", pass: "joy123" },
+    { email: "cjoy7970@gmail.com", name: "Raal Mardird Cameback", pass: "joy123" },
     { email: "sammondal888@gmail.com", name: "Black Panthers FC", pass: "sam123" },
     { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
     
@@ -85,7 +85,7 @@ const teamList = [
     { name: "Wrath Of Wings", budget: 2000 },
     { name: "IMMORTAL DE CAMPEONES (IDC)", budget: 2000 },
     { name: "Destroyers", budget: 2000 },
-    { name: "ml", budget: 2000 },
+    { name: "Raal Mardird Cameback", budget: 2000 },
     { name: "Black Panthers FC", budget: 2000 },
     { name: "PREDETORS TRIO", budget: 2000 }
 ];
@@ -123,15 +123,34 @@ let auctionState = {
     currentBid: 0, 
     highestBidder: 'No Bids Yet', 
     timeLeft: 120,
-    skippedTeams: [] // NEW: Track who clicked skip
+    skippedTeams: [],
+    isFinalCall: false,     // NEW
+    finalCallText: ""
+
 };
 let timerInterval = null;
 
+function getFinalCallText(seconds) {
+    if (seconds > 25) return "Are there any further bids?";
+    if (seconds > 20) return "For the first time...";
+    if (seconds > 15) return "For the second time...";
+    if (seconds > 10) return "Going once...";
+    if (seconds > 5) return "Going twice...";
+    if (seconds > 0) return "SOLD!";
+    return "SOLD!";
+}
+
 function startTimer() {
     clearInterval(timerInterval);
-    auctionState.timeLeft = 120;
+    // If it's a final call, we start from 30, otherwise standard 60 (or 120 as you mentioned)
+    auctionState.timeLeft = auctionState.isFinalCall ? 30 : 120; 
+    
     timerInterval = setInterval(async () => {
         auctionState.timeLeft--;
+        
+        if (auctionState.isFinalCall) {
+            auctionState.finalCallText = getFinalCallText(auctionState.timeLeft);
+        }
         if (auctionState.timeLeft <= 0) {
             clearInterval(timerInterval);
             await autoSellPlayer();
@@ -274,6 +293,15 @@ io.on('connection', async (socket) => {
         };
         io.emit('updateAuction', auctionState);
         startTimer();
+    }
+});
+
+    socket.on('startFinalCall', () => {
+    if (auctionState.activePlayerId && auctionState.highestBidder !== 'No Bids Yet') {
+        auctionState.isFinalCall = true;
+        startTimer(); // This will now start the 30s sequence
+        io.emit('updateAuction', auctionState);
+        io.emit('newMessage', { sender: "SYSTEM", role: "admin", text: "⚠️ ADMIN HAS INITIATED THE FINAL CALL!" });
     }
 });
 
