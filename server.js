@@ -194,32 +194,7 @@ io.on('connection', async (socket) => {
 
     // --- NEW: AUTHENTICATION EVENTS ---
 
-    // 1. Visitor Registration
-    socket.on('register', async (data) => {
-        try {
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            const hashedPassword = await bcrypt.hash(data.password, 10);
-            
-            await User.findOneAndUpdate(
-                { email: data.email },
-                { 
-                    name: data.name, 
-                    password: hashedPassword, 
-                    role: 'visitor', 
-                    otp, 
-                    otpExpires: Date.now() + 600000, 
-                    isVerified: false 
-                },
-                { upsert: true }
-            );
-            
-            await sendOTPEmail(data.email, otp);
-            socket.emit('authStep', 'otp_verify');
-        } catch (err) { 
-            console.error(err);
-            socket.emit('errorMsg', "Registration Failed"); 
-        }
-    });
+    
 
     // 2. Special Sign In (Captain/Admin)
     socket.on('specialSignIn', async ({ email, password, type }) => {
