@@ -61,7 +61,10 @@ const CAPTAINS = [
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
     { email: "rohitnaskar845@gmail.com", name: "IMMORTAL DE CAMPEONES (IDC)", pass: "rohit123" },
     { email: "pariasaikat94@gmail.com", name: "Destroyers", pass: "saikat123" },
+    { email: "cjoy7970@gmail.com", name: "ml", pass: "joy123" },
+    { email: "sammondal888@gmail.com", name: "Black Panthers FC", pass: "sam123" },
     { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
+    
 ];
 
 // --- AUTH UTILITIES ---
