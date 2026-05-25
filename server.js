@@ -79,13 +79,15 @@ async function sendOTPEmail(email, otp) {
 
 // --- AUTOMATIC TEAM SEEDING ---
 const teamList = [
-    { name: "Storm Hunters", budget: 1000 },
-    { name: "Xenon", budget: 1000 },
-    { name: "FlameBorn Kings", budget: 1000 },
-    { name: "Wrath Of Wings", budget: 1000 },
-    { name: "IMMORTAL DE CAMPEONES (IDC)", budget: 1000 },
-    { name: "Destroyers", budget: 1000 },
-    { name: "PREDETORS TRIO", budget: 1000 }
+    { name: "Storm Hunters", budget: 2000 },
+    { name: "Xenon", budget: 2000 },
+    { name: "FlameBorn Kings", budget: 2000 },
+    { name: "Wrath Of Wings", budget: 2000 },
+    { name: "IMMORTAL DE CAMPEONES (IDC)", budget: 2000 },
+    { name: "Destroyers", budget: 2000 },
+    { name: "ml", budget: 2000 },
+    { name: "Black Panthers FC", budget: 2000 },
+    { name: "PREDETORS TRIO", budget: 2000 }
 ];
 
 async function seedTeams() {
@@ -104,14 +106,14 @@ app.get('/reset-teams', async (req, res) => {
     try {
         await Team.deleteMany({}); 
         await Team.insertMany(teamList);
-        res.send("✅ Teams successfully reset to 100L!");
+        res.send("✅ Teams successfully reset to 2000L!");
     } catch (e) { res.status(500).send(e.message); }
 });
 
 app.get('/fix-budgets', async (req, res) => {
     try {
-        await Team.updateMany({}, { $set: { budget: 1000 } });
-        res.send("✅ All budgets reset to 100L!");
+        await Team.updateMany({}, { $set: { budget: 2000 } });
+        res.send("✅ All budgets reset to 2000L!");
     } catch (e) { res.status(500).send(e.message); }
 });
 
