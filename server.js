@@ -61,7 +61,7 @@ const CAPTAINS = [
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
     { email: "kunduarnab7439@gmail.com", name: "PANDAVA", pass: "arnab123" },
     { email: "pariasaikat94@gmail.com", name: "Destroyers", pass: "saikat123" },
-    { email: "cjoy7970@gmail.com", name: "Raal Mardird Cameback", pass: "joy123" },
+    { email: "cjoy7970@gmail.com", name: "Madrid Warriors", pass: "joy123" },
     { email: "sammondal888@gmail.com", name: "Black Panthers FC", pass: "sam123" }
     
 ];
@@ -84,7 +84,7 @@ const teamList = [
     { name: "Wrath Of Wings", budget: 2000 },
     { name: "PANDAVA", budget: 2000 },
     { name: "Destroyers", budget: 2000 },
-    { name: "Raal Mardird Cameback", budget: 2000 },
+    { name: "Madrid Warriors", budget: 2000 },
     { name: "Black Panthers FC", budget: 2000 }
 ];
 
