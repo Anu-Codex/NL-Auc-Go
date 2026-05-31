@@ -59,11 +59,10 @@ const CAPTAINS = [
     { email: "asheshchatterjee.2016@gmail.com", name: "Xenon", pass: "ashesh123" },
     { email: "anishdgp0104@gmail.com", name: "FlameBorn Kings", pass: "anish123" },
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
-    { email: "rohitnaskar845@gmail.com", name: "IMMORTAL DE CAMPEONES (IDC)", pass: "rohit123" },
+    { email: "kunduarnab7439@gmail.com", name: "PANDAVA", pass: "arnab123" },
     { email: "pariasaikat94@gmail.com", name: "Destroyers", pass: "saikat123" },
     { email: "cjoy7970@gmail.com", name: "Raal Mardird Cameback", pass: "joy123" },
-    { email: "sammondal888@gmail.com", name: "Black Panthers FC", pass: "sam123" },
-    { email: "sarkaranubhav32@gmail.com", name: "PREDETORS TRIO", pass: "anu123" }
+    { email: "sammondal888@gmail.com", name: "Black Panthers FC", pass: "sam123" }
     
 ];
 
@@ -83,11 +82,10 @@ const teamList = [
     { name: "Xenon", budget: 2000 },
     { name: "FlameBorn Kings", budget: 2000 },
     { name: "Wrath Of Wings", budget: 2000 },
-    { name: "IMMORTAL DE CAMPEONES (IDC)", budget: 2000 },
+    { name: "PANDAVA", budget: 2000 },
     { name: "Destroyers", budget: 2000 },
     { name: "Raal Mardird Cameback", budget: 2000 },
-    { name: "Black Panthers FC", budget: 2000 },
-    { name: "PREDETORS TRIO", budget: 2000 }
+    { name: "Black Panthers FC", budget: 2000 }
 ];
 
 async function seedTeams() {
