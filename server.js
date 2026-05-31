@@ -56,7 +56,7 @@ const ADMINS = [
 
 const CAPTAINS = [
     { email: "riturajjj10@gmail.com", name: "Storm Hunters", pass: "roni123" },
-    { email: "asheshchatterjee.2016@gmail.com", name: "Xenon", pass: "ashesh123" },
+    { email: "asheshchatterjee.2016@gmail.com", name: "UNDERDOG FC", pass: "ashesh123" },
     { email: "anishdgp0104@gmail.com", name: "FlameBorn Kings", pass: "anish123" },
     { email: "sunnyghoshdastidar506@gmail.com", name: "Wrath Of Wings", pass: "piyush123" },
     { email: "kunduarnab7439@gmail.com", name: "PANDAVA", pass: "arnab123" },
@@ -79,7 +79,7 @@ async function sendOTPEmail(email, otp) {
 // --- AUTOMATIC TEAM SEEDING ---
 const teamList = [
     { name: "Storm Hunters", budget: 2000 },
-    { name: "Xenon", budget: 2000 },
+    { name: "UNDERDOG FC", budget: 2000 },
     { name: "FlameBorn Kings", budget: 2000 },
     { name: "Wrath Of Wings", budget: 2000 },
     { name: "PANDAVA", budget: 2000 },
